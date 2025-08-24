@@ -1,57 +1,77 @@
-name: Cypress Tests
-on: [push]
+# Flujo de trabajo de CI/CD para la ejecución de pruebas de Cypress y el despliegue
+# de reportes de resultados a GitHub Pages.
+name: Cypress Tests & Report Deployment
+
+# Define el disparador del workflow: un push a la rama 'main'.
+on:
+  push:
+    branches:
+      - main
+
 jobs:
-  cypress-run:
+  #================================================
+  # JOB 1: Construcción y Ejecución de Pruebas
+  #================================================
+  build-and-test:
     runs-on: ubuntu-latest
-    # Runs tests in parallel with matrix strategy https://docs.cypress.io/guides/guides/parallelization
-    # https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs
-    # Also see warning here https://github.com/cypress-io/github-action#parallel
-    strategy:
-      fail-fast: false # https://github.com/cypress-io/github-action/issues/48
-      matrix:
-        containers: [1, 2] # Uses 2 parallel instances
+
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
 
-      - name: Install deps
+      - name: Install dependencies
+        # 'npm ci' es utilizado para una instalación limpia y reproducible
+        # a partir del archivo package-lock.json, ideal para entornos de CI.
         run: npm ci
 
-      # 1) Ejecutar Cypress (sin start/wait-on)
-      - name: Run Cypress
+      - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         with:
           command: npm run cy:run
           record: true
         env:
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # 2) Generar reporte HTML
       - name: Generate HTML report
+        # La condición 'always()' asegura que el reporte se genere incluso si
+        # las pruebas fallan, permitiendo analizar los resultados del fallo.
+        if: always()
         run: npm run report:gen
 
-      # 3) Publicar en GitHub Pages (branch gh-pages)
-      - name: Publish report to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Upload report as a Pages artifact
+        # Carga el directorio del reporte para que esté disponible para el
+        # job de despliegue, utilizando el formato requerido por GitHub Pages.
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: cypress/reports/html
-          keep_files: false
+          path: cypress/reports/html
 
-      # 4) Construir la URL pública del reporte
-      - name: Build Report URL
-        id: report_url
-        run: |
-          echo "url=https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/" >> $GITHUB_OUTPUT
+  #================================================
+  # JOB 2: Despliegue del Reporte en GitHub Pages
+  #================================================
+  deploy-report:
+    # Este job depende de la finalización exitosa del job 'build-and-test'.
+    needs: build-and-test
 
-      # 5) (Opcional) Imprimir la URL y/o usarla en otros pasos
-      - name: Print Report URL
-        run: |
-          echo "Report: ${{ steps.report_url.outputs.url }}"
+    # Configura los permisos mínimos requeridos para el despliegue.
+    permissions:
+      pages: write      # Requerido para enviar contenido a GitHub Pages.
+      id-token: write   # Requerido para la autenticación segura (OIDC).
+
+    # Define el entorno de despliegue para vincularlo con las reglas de GitHub.
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        # Utiliza la acción oficial de GitHub para desplegar el artefacto
+        # previamente cargado en el entorno de GitHub Pages.
+        uses: actions/deploy-pages@v4
