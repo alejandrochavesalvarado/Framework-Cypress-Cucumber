@@ -3,7 +3,7 @@ const path = require('path');
 
 // --- NUEVA FUNCIÓN PARA CONTAR RESULTADOS DESDE LOS ARCHIVOS JSON ---
 function getTestResults() {
-    const reportsDir = path.join(__dirname, '..', '..', 'reports');
+    const reportsDir = path.join(__dirname, '..', '..', 'reports', 'results');
     let totalPassed = 0;
     let totalFailed = 0;
 
