@@ -1,5 +1,8 @@
-name: Cypress Tests, Report & Notification
+# Flujo de trabajo de CI/CD para la ejecución de pruebas de Cypress y el despliegue
+# de reportes de resultados a GitHub Pages.
+name: Cypress Tests & Report Deployment
 
+# Define el disparador del workflow: un push a la rama 'main'.
 on:
   push:
     branches:
@@ -11,6 +14,7 @@ jobs:
   #================================================
   build-and-test:
     runs-on: ubuntu-latest
+    # Se añade la sección 'outputs' para pasar datos a otros jobs.
     outputs:
       cloud_url: ${{ steps.cypress_run.outputs.dashboard-url }}
       total_passed: ${{ steps.cypress_run.outputs.total-passed }}
@@ -29,12 +33,19 @@ jobs:
         run: npm ci
 
       - name: Run Cypress tests
+        # Se añade un 'id' para poder referenciar los resultados de este paso.
         id: cypress_run
         uses: cypress-io/github-action@v6
         with:
           command: npm run cy:run
           record: true
         env:
+          # --- Secretos para las pruebas ---
+          BASE_URL: ${{ secrets.BASE_URL }}
+          DEFAULT_USER_EMAIL: ${{ secrets.DEFAULT_USER_EMAIL }}
+          DEFAULT_USER_PASSWORD: ${{ secrets.DEFAULT_USER_PASSWORD }}
+
+          # Secreto para el dashboard de Cypress.
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
 
       - name: Generate HTML report
@@ -57,6 +68,7 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    # Se añade la sección 'outputs' para pasar la URL de la página.
     outputs:
       page_url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
@@ -71,8 +83,10 @@ jobs:
   send-notification:
     name: Send Notification Email
     runs-on: ubuntu-latest
+    # Depende de los dos jobs anteriores.
     needs: [build-and-test, deploy-report]
-    if: always() # Se ejecuta siempre, incluso si los jobs anteriores fallan
+    # Se ejecuta siempre para notificar tanto éxitos como fallos.
+    if: always()
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
