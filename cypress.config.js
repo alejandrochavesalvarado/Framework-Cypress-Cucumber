@@ -10,6 +10,7 @@ require('dotenv').config();
 
 
 module.exports = defineConfig({
+  projectId: "22i3v2",
   e2e: {
     specPattern: "**/*.feature",
     async setupNodeEvents(on, config) {
