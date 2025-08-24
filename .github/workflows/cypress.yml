@@ -14,9 +14,6 @@ jobs:
   #================================================
   build-and-test:
     runs-on: ubuntu-latest
-    # Se añade la sección 'outputs' para pasar datos a otros jobs.
-    outputs:
-      cloud_url: ${{ secrets.CLOUD_URL }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -99,7 +96,7 @@ jobs:
         env:
           STATUS: ${{ needs.build-and-test.result }}
           PAGES_URL: ${{ needs.deploy-report.outputs.page_url }}
-          CLOUD_URL: ${{ needs.build-and-test.outputs.cloud_url }}
+          CLOUD_URL: ${{ secrets.CLOUD_URL }}
 
       - name: Send Email
         uses: dawidd6/action-send-mail@v3
