@@ -4,18 +4,18 @@
   "description": "Framework Cypress - Pruebas Automatizadas",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "report": "node ./cypress/reports/generateReport.js",
     "headless": "cypress run --headless",
-    "start": "cypress run ",
-    "test:tags": "cross-env cypress run --env tags=%npm_config_tags%",
-    "serve:report": "live-server --port=8080 --open=./cypress/reports/dashboard/index.html",
-    "test:feature": "cypress run --headless --spec",
+    "cy:run": "cypress run",
 
+    "test:tags": "cross-env cypress run --env tags=%npm_config_tags%",
+    "test:feature": "cypress run --headless --spec",
     "test:login": "cypress run --env tags=@login",
     "test:smoke": "cypress run --env tags=@smoke",
     "test:regression": "cypress run --env tags=@regression",
-    "test:critical": "cypress run --env tags=@critical"
+    "test:critical": "cypress run --env tags=@critical",
+
+    "report:gen": "node ./cypress/reports/generateReport.js",
+    "report:serve": "live-server --port=8080 --open=./cypress/reports/dashboard/index.html"
   },
   "repository": {
     "type": "git",
