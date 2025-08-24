@@ -37,7 +37,7 @@ jobs:
         id: cypress_run
         uses: cypress-io/github-action@v6
         with:
-          command: npm run cy:run
+          command: npm run cy:record
           record: true
         env:
           # --- Secretos para las pruebas ---
