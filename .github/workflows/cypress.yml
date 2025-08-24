@@ -53,5 +53,5 @@ jobs:
 
       # 5) (Opcional) Imprimir la URL y/o usarla en otros pasos
       - name: Print Report URL
-        run:
+        run: |
           echo "Report: ${{ steps.report_url.outputs.url }}"
