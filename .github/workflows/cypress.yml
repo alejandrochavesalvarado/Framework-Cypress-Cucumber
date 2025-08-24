@@ -26,8 +26,6 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        # 'npm ci' es utilizado para una instalación limpia y reproducible
-        # a partir del archivo package-lock.json, ideal para entornos de CI.
         run: npm ci
 
       - name: Run Cypress tests
@@ -39,31 +37,24 @@ jobs:
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
 
       - name: Generate HTML report
-        # La condición 'always()' asegura que el reporte se genere incluso si
-        # las pruebas fallan, permitiendo analizar los resultados del fallo.
         if: always()
         run: npm run report:gen
 
       - name: Upload report as a Pages artifact
-        # Carga el directorio del reporte para que esté disponible para el
-        # job de despliegue, utilizando el formato requerido por GitHub Pages.
         uses: actions/upload-pages-artifact@v3
         with:
-          path: cypress/reports/html
+          path: 'cypress/reports/dashboard'
 
   #================================================
   # JOB 2: Despliegue del Reporte en GitHub Pages
   #================================================
   deploy-report:
-    # Este job depende de la finalización exitosa del job 'build-and-test'.
     needs: build-and-test
 
-    # Configura los permisos mínimos requeridos para el despliegue.
     permissions:
-      pages: write      # Requerido para enviar contenido a GitHub Pages.
-      id-token: write   # Requerido para la autenticación segura (OIDC).
+      pages: write
+      id-token: write
 
-    # Define el entorno de despliegue para vincularlo con las reglas de GitHub.
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -72,6 +63,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        # Utiliza la acción oficial de GitHub para desplegar el artefacto
-        # previamente cargado en el entorno de GitHub Pages.
         uses: actions/deploy-pages@v4
