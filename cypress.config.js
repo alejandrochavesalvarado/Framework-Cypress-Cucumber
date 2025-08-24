@@ -100,6 +100,7 @@ module.exports = defineConfig({
     },
     "video": false,
     "screenshotOnRunFailure": true,
+    "trashAssetsBeforeRuns": true,
     "pageLoadTimeout": 30000,
     "env": {
         "BASE_URL": process.env.BASE_URL,
