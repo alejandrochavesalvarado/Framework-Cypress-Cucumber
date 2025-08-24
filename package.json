@@ -1,0 +1,59 @@
+{
+  "name": "cypress",
+  "version": "1.0.0",
+  "description": "Framework Cypress - Pruebas Automatizadas",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "report": "node ./cypress/reports/generateReport.js",
+    "headless": "cypress run --headless",
+    "start": "cypress run ",
+    "test:tags": "cross-env cypress run --env tags=%npm_config_tags%",
+    "serve:report": "live-server --port=8080 --open=./cypress/reports/dashboard/index.html",
+    "test:feature": "cypress run --headless --spec",
+
+    "test:login": "cypress run --env tags=@login",
+    "test:smoke": "cypress run --env tags=@smoke",
+    "test:regression": "cypress run --env tags=@regression",
+    "test:critical": "cypress run --env tags=@critical"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alejandrochavesalvarado/Framework-Cypress-Cucumber.git"
+  },
+  "author": "Johan Alejandro Chaves Alvarado",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alejandrochavesalvarado/Framework-Cypress-Cucumber/issues"
+  },
+  "homepage": "https://github.com/alejandrochavesalvarado/Framework-Cypress-Cucumber#readme",
+  "cypress-cucumber-preprocessor": {
+    "json": {
+      "enabled": true,
+      "output": "./cypress/reports/results.json"
+    },
+    "stepDefinitions": [
+      "cypress/e2e/step_definitions/**/*.js",
+      "cypress/e2e/step_definitions/common/*.js"
+    ]
+  },
+  "devDependencies": {
+    "@badeball/cypress-cucumber-preprocessor": "^23.0.0",
+    "@faker-js/faker": "^10.0.0",
+    "cross-env": "^10.0.0",
+    "cypress": "^15.0.0",
+    "cypress-downloadfile": "^1.2.4",
+    "cypress-esbuild-preprocessor": "^1.0.2",
+    "cypress-file-upload": "^5.0.8",
+    "cypress-wait-for-stable-dom": "^0.1.0",
+    "dotenv": "^8.2.0",
+    "esbuild": "^0.25.9",
+    "multiple-cucumber-html-reporter": "^3.9.3"
+  },
+  "dependencies": {
+    "@bahmutov/cypress-esbuild-preprocessor": "^2.2.5",
+    "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
+    "esbuild-plugin-polyfill-node": "^0.3.0",
+    "esbuild-plugins-node-modules-polyfill": "^1.7.1"
+  }
+}
