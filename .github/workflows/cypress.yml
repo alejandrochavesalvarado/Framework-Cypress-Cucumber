@@ -16,9 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     # Se añade la sección 'outputs' para pasar datos a otros jobs.
     outputs:
-      cloud_url: ${{ steps.cypress_run.outputs.dashboard-url }}
-      total_passed: ${{ steps.cypress_run.outputs.total-passed }}
-      total_failed: ${{ steps.cypress_run.outputs.total-failed }}
+      cloud_url: ${{ secrets.CLOUD_URL }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -100,8 +98,6 @@ jobs:
         run: node cypress/email/scripts/generate-email-body.js
         env:
           STATUS: ${{ needs.build-and-test.result }}
-          TOTAL_PASSED: ${{ needs.build-and-test.outputs.total_passed }}
-          TOTAL_FAILED: ${{ needs.build-and-test.outputs.total_failed }}
           PAGES_URL: ${{ needs.deploy-report.outputs.page_url }}
           CLOUD_URL: ${{ needs.build-and-test.outputs.cloud_url }}
 
