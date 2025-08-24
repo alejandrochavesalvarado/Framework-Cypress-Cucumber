@@ -31,30 +31,43 @@ jobs:
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         with:
-          command: npm run cy:run
+          command: npm run cy:record
           record: true
         env:
+          # --- Secretos para las pruebas ---
+          # Aquí se inyectan de forma segura las variables que se configutan en GitHub.
+          # Cypress puede acceder a ellas usando Cypress.env('NOMBRE_DEL_SECRETO').
+          BASE_URL: ${{ secrets.BASE_URL }}
+          DEFAULT_USER_EMAIL: ${{ secrets.DEFAULT_USER_EMAIL }}
+          DEFAULT_USER_PASSWORD: ${{ secrets.DEFAULT_USER_PASSWORD }}
+
+          # Secreto para el dashboard de Cypress (si lo usas).
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
 
       - name: Generate HTML report
+        # Se ejecuta siempre para tener un reporte incluso si las pruebas fallan.
         if: always()
         run: npm run report:gen
 
       - name: Upload report as a Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
+          # Ruta correcta del reporte que genera tu script.
           path: 'cypress/reports/dashboard'
 
   #================================================
   # JOB 2: Despliegue del Reporte en GitHub Pages
   #================================================
   deploy-report:
+    # Depende de que el job anterior termine correctamente.
     needs: build-and-test
 
+    # Permisos mínimos y seguros para el despliegue.
     permissions:
       pages: write
       id-token: write
 
+    # Define el entorno de despliegue.
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -63,4 +76,5 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
+        # Acción oficial para desplegar a GitHub Pages.
         uses: actions/deploy-pages@v4

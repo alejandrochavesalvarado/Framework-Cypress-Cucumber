@@ -6,14 +6,13 @@
   "scripts": {
     "headless": "cypress run --headless",
     "cy:run": "cypress run",
-
+    "cy:record": "dotenv -- cypress run --record",
     "test:tags": "cross-env cypress run --env tags=%npm_config_tags%",
     "test:feature": "cypress run --headless --spec",
     "test:login": "cypress run --env tags=@login",
     "test:smoke": "cypress run --env tags=@smoke",
     "test:regression": "cypress run --env tags=@regression",
     "test:critical": "cypress run --env tags=@critical",
-
     "report:gen": "node ./cypress/reports/generateReport.js",
     "report:serve": "live-server --port=8080 --open=./cypress/reports/dashboard/index.html"
   },
@@ -47,6 +46,7 @@
     "cypress-file-upload": "^5.0.8",
     "cypress-wait-for-stable-dom": "^0.1.0",
     "dotenv": "^8.2.0",
+    "dotenv-cli": "^10.0.0",
     "esbuild": "^0.25.9",
     "multiple-cucumber-html-reporter": "^3.9.3"
   },
