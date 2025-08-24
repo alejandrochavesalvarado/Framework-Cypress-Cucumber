@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
+        .container { max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px; border-radius: 8px; }
+        .header { font-size: 24px; font-weight: bold; margin-bottom: 20px; color: {{statusColor}}; }
+        .summary-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .summary-table th, .summary-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .summary-table th { background-color: #f2f2f2; }
+        .links a { color: #0066cc; text-decoration: none; display: block; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">Reporte de Ejecución: {{status}}</div>
+    <p>A continuación se presenta un resumen de la última ejecución de pruebas automatizadas.</p>
+
+    <table class="summary-table">
+        <thead>
+        <tr>
+            <th>Métrica</th>
+            <th>Valor</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>Pruebas Superadas (Passed)</td>
+            <td>{{totalPassed}}</td>
+        </tr>
+        <tr>
+            <td>Pruebas Fallidas (Failed)</td>
+            <td>{{totalFailed}}</td>
+        </tr>
+        <tr>
+            <td><strong>Total de Pruebas Ejecutadas</strong></td>
+            <td><strong>{{totalTests}}</strong></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="links">
+        <a href="{{pagesReportUrl}}" target="_blank">Ver Reporte HTML Detallado (GitHub Pages)</a>
+        <a href="{{cypressCloudUrl}}" target="_blank">Ver Ejecución en Cypress Cloud</a>
+    </div>
+</div>
+</body>
+</html>
