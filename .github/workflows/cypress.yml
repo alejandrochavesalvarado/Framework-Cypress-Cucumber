@@ -28,7 +28,6 @@ jobs:
         run: npm ci
 
       - name: Run Cypress tests
-        # Se añade un 'id' para poder referenciar los resultados de este paso.
         id: cypress_run
         uses: cypress-io/github-action@v6
         with:
@@ -39,34 +38,40 @@ jobs:
           BASE_URL: ${{ secrets.BASE_URL }}
           DEFAULT_USER_EMAIL: ${{ secrets.DEFAULT_USER_EMAIL }}
           DEFAULT_USER_PASSWORD: ${{ secrets.DEFAULT_USER_PASSWORD }}
-
-          # Secreto para el dashboard de Cypress.
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
 
       - name: Generate HTML report
         if: always()
         run: npm run report:gen
 
-      - name: Upload report as a Pages artifact
+      - name: Upload HTML report for Pages
+        if: always()
         uses: actions/upload-pages-artifact@v3
         with:
           path: 'cypress/reports/dashboard'
 
+      # --- MODIFICACIÓN 1 ---
+      # Sube el archivo results.json como un artifact para que otros jobs puedan usarlo.
+      - name: Upload JSON report for email
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: json-report-artifact
+          path: cypress/reports/results.json
+
   #================================================
-  # JOB 2: Despliegue del Reporte en GitHub Pages
+  # JOB 2: Despliegue del Reporte a GitHub Pages
   #================================================
   deploy-report:
+    runs-on: ubuntu-latest
     needs: build-and-test
+    if: always()
     permissions:
       pages: write
       id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    # Se añade la sección 'outputs' para pasar la URL de la página.
-    outputs:
-      page_url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
@@ -78,13 +83,26 @@ jobs:
   send-notification:
     name: Send Notification Email
     runs-on: ubuntu-latest
-    # Depende de los dos jobs anteriores.
     needs: [build-and-test, deploy-report]
-    # Se ejecuta siempre para notificar tanto éxitos como fallos.
     if: always()
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      # --- MODIFICACIÓN 2 ---
+      # Descarga el artifact con el archivo results.json en la carpeta correcta.
+      - name: Download JSON report artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: json-report-artifact
+          path: cypress/reports
+
+      # --- MODIFICACIÓN 3 (Paso de Depuración) ---
+      # Este comando nos mostrará si el archivo se descargó correctamente.
+      - name: Verify downloaded files
+        run: |
+          echo "Verificando el contenido de la carpeta cypress/reports..."
+          ls -R cypress/reports
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
