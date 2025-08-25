@@ -1,32 +1,45 @@
-# Flujo de trabajo de CI/CD para la ejecución de pruebas de Cypress y el despliegue
-# de reportes de resultados a GitHub Pages.
+# -----------------------------------------------------------------------------
+# Nombre del Workflow
+# -----------------------------------------------------------------------------
 name: Cypress Tests & Report Deployment
 
-# Define el disparador del workflow: un push a la rama 'main'.
+# -----------------------------------------------------------------------------
+# Disparador (Trigger)
+# El workflow se ejecuta automáticamente cada vez que haces un 'push' a la rama 'main'.
+# -----------------------------------------------------------------------------
 on:
   push:
     branches:
       - main
 
+# -----------------------------------------------------------------------------
+# Trabajos (Jobs)
+# Define las diferentes etapas del pipeline.
+# -----------------------------------------------------------------------------
 jobs:
-  #================================================
-  # JOB 1: Construcción y Ejecución de Pruebas
-  #================================================
+  # ============================================================================
+  # JOB 1: CONSTRUIR Y PROBAR (build-and-test)
+  # Responsable de ejecutar las pruebas de Cypress y generar los reportes.
+  # ============================================================================
   build-and-test:
     runs-on: ubuntu-latest
     steps:
+      # Paso 1: Descarga el código de tu repositorio.
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Paso 2: Configura el entorno de Node.js.
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
 
+      # Paso 3: Instala las dependencias del proyecto.
       - name: Install dependencies
         run: npm ci
 
+      # Paso 4: Ejecuta las pruebas de Cypress y se conecta al Dashboard.
       - name: Run Cypress tests
         id: cypress_run
         uses: cypress-io/github-action@v6
@@ -34,23 +47,24 @@ jobs:
           command: npm run cy:record
           record: true
         env:
-          # --- Secretos para las pruebas ---
           BASE_URL: ${{ secrets.BASE_URL }}
           DEFAULT_USER_EMAIL: ${{ secrets.DEFAULT_USER_EMAIL }}
           DEFAULT_USER_PASSWORD: ${{ secrets.DEFAULT_USER_PASSWORD }}
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
 
+      # Paso 5: Genera el reporte HTML (siempre se ejecuta, incluso si fallan las pruebas).
       - name: Generate HTML report
         if: always()
         run: npm run report:gen
 
+      # Paso 6: Sube el reporte HTML para que pueda ser desplegado en GitHub Pages.
       - name: Upload HTML report for Pages
         if: always()
         uses: actions/upload-pages-artifact@v3
         with:
           path: 'cypress/reports/dashboard'
 
-      # Sube el archivo results.json como un artifact para que otros jobs puedan usarlo.
+      # Paso 7: Sube el reporte JSON para que el job de correo pueda usarlo.
       - name: Upload JSON report for email
         if: always()
         uses: actions/upload-artifact@v4
@@ -58,12 +72,13 @@ jobs:
           name: json-report-artifact
           path: cypress/reports/results.json
 
-  #================================================
-  # JOB 2: Despliegue del Reporte a GitHub Pages
-  #================================================
+  # ============================================================================
+  # JOB 2: DESPLEGAR REPORTE (deploy-report)
+  # Publica el reporte HTML en un sitio web de GitHub Pages.
+  # ============================================================================
   deploy-report:
     runs-on: ubuntu-latest
-    needs: build-and-test
+    needs: build-and-test # Se ejecuta después del job 'build-and-test'.
     if: always()
     permissions:
       pages: write
@@ -72,42 +87,45 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     outputs:
-      page_url: ${{ steps.deployment.outputs.page_url }}
+      page_url: ${{ steps.deployment.outputs.page_url }} # Comparte la URL con otros jobs.
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
 
-  #================================================
-  # JOB 3: Envío de Notificación por Correo
-  #================================================
+  # ============================================================================
+  # JOB 3: ENVIAR NOTIFICACIÓN (send-notification)
+  # Genera y envía el correo electrónico con el resumen de los resultados.
+  # ============================================================================
   send-notification:
     name: Send Notification Email
     runs-on: ubuntu-latest
-    needs: [build-and-test, deploy-report]
+    needs: [build-and-test, deploy-report] # Se ejecuta después de los dos jobs anteriores.
     if: always()
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Descarga el artifact con el archivo results.json en la carpeta correcta.
+      # Paso 1: Descarga el reporte JSON que subió el primer job.
       - name: Download JSON report artifact
         uses: actions/download-artifact@v4
         with:
           name: json-report-artifact
           path: cypress/reports
 
-      # Este comando nos mostrará si el archivo se descargó correctamente.
+      # Paso 2: (Verificación) Muestra los archivos descargados para confirmar que todo está bien.
       - name: Verify downloaded files
         run: |
           echo "Verificando el contenido de la carpeta cypress/reports..."
           ls -R cypress/reports
 
+      # Paso 3: Configura Node.js para el script de generación de correo.
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
+      # Paso 4: Ejecuta el script que lee el JSON y crea el archivo 'email-body.html'.
       - name: Generate Email Body
         run: node cypress/email/scripts/generate-email-body.js
         env:
@@ -115,6 +133,7 @@ jobs:
           PAGES_URL: ${{ needs.deploy-report.outputs.page_url }}
           CLOUD_URL: ${{ secrets.CLOUD_URL }}
 
+      # Paso 5: Envía el correo utilizando el archivo 'email-body.html' como cuerpo.
       - name: Send Email
         uses: dawidd6/action-send-mail@v3
         with:
