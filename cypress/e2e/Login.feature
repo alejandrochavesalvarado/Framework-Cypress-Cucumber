@@ -24,6 +24,6 @@ Feature: SydneyKart Authentication
       | email           | password        | message                            | redirect_action   | login_status |
       | test@admin.com  | test@admin.com  |                                    | Redirect to Home  | logged in    |
       | test@example.com| password123     | Invalid email or password          | No Redirect       | not logged in|
-      | test@admin.com  | password12345   | Invalid email or password          | No Redirect       | not logged in|
+      | test@admin.com  | password12345   | Invalid email or password          | No Redirect       | not logged inn|
       |                 | password123     | Please enter email & password      | No Redirect       | not logged in|
-      | test@example.com|                 | Please enter email & password      | No Redirect       | not logged in|
+      | test@example.com|                 | Please enter email & password      | No Redirect       | not logged innn|

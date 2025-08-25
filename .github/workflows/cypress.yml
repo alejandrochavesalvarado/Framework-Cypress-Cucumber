@@ -50,7 +50,6 @@ jobs:
         with:
           path: 'cypress/reports/dashboard'
 
-      # --- MODIFICACIÓN 1 ---
       # Sube el archivo results.json como un artifact para que otros jobs puedan usarlo.
       - name: Upload JSON report for email
         if: always()
@@ -89,7 +88,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # --- MODIFICACIÓN 2 ---
       # Descarga el artifact con el archivo results.json en la carpeta correcta.
       - name: Download JSON report artifact
         uses: actions/download-artifact@v4
@@ -97,7 +95,6 @@ jobs:
           name: json-report-artifact
           path: cypress/reports
 
-      # --- MODIFICACIÓN 3 (Paso de Depuración) ---
       # Este comando nos mostrará si el archivo se descargó correctamente.
       - name: Verify downloaded files
         run: |
