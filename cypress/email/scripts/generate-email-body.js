@@ -1,9 +1,12 @@
 const fs = require('fs');
 const path = require('path');
 
-// --- FUNCIÓN PARA CONTAR RESULTADOS DESDE LOS ARCHIVOS JSON (VERSIÓN CORREGIDA) ---
+/**
+ * Lee los archivos de reporte .json del directorio 'cypress/reports',
+ * cuenta el número de escenarios pasados y fallidos, y devuelve los totales.
+ * Es tolerante a fallos: si un archivo JSON está mal formado, lo ignora y continúa.
+ */
 function getTestResults() {
-    // Se define la ruta al directorio que contiene los reportes.
     const reportsDir = path.join(__dirname, '..', '..', 'reports');
     let totalPassed = 0;
     let totalFailed = 0;
@@ -13,7 +16,7 @@ function getTestResults() {
 
     // Se itera sobre cada archivo de reporte encontrado.
     for (const file of reportFiles) {
-        // El bloque try...catch se usa para procesar cada archivo de forma independiente.
+        // El bloque try...catch procesa cada archivo de forma independiente.
         // Si un archivo falla, el script no se detendrá y continuará con los demás.
         try {
             const filePath = path.join(reportsDir, file);
@@ -52,14 +55,15 @@ function getTestResults() {
             });
         } catch (error) {
             // Si ocurre un error al leer o procesar un archivo, se reporta y se ignora.
-            console.error(`ERROR: No se pudo procesar el archivo de reporte "${file}". Será ignorado.`, error);
+            console.error(`ERROR: No se pudo procesar el archivo de reporte "${file}". Será ignorado.`);
         }
     }
 
     return { totalPassed, totalFailed };
 }
-// --- FIN DE LA FUNCIÓN ---
 
+
+// --- LÓGICA PRINCIPAL DEL SCRIPT ---
 
 // Obtener datos de las variables de entorno pasadas por el pipeline.
 const status = process.env.STATUS || 'desconocido';
@@ -83,9 +87,12 @@ emailTemplate = emailTemplate.replace('{{totalTests}}', totalTests);
 emailTemplate = emailTemplate.replace('{{pagesReportUrl}}', pagesUrl);
 emailTemplate = emailTemplate.replace('{{cypressCloudUrl}}', cloudUrl);
 
-// Guardar el cuerpo del correo procesado en un archivo para que el siguiente paso del pipeline lo use.
-const outputPath = path.join(__dirname, '..', '..', 'email-body.html');
+// Se define la ruta de salida para guardar el archivo en la raíz del proyecto.
+// Esto es crucial para que el workflow de GitHub Actions lo encuentre.
+const outputPath = path.join(__dirname, '..', '..', '..', 'email-body.html');
+
+// Guardar el cuerpo del correo procesado en el archivo final.
 fs.writeFileSync(outputPath, emailTemplate);
 
-console.log('Cuerpo del correo generado exitosamente en:', outputPath);
-console.log(`Resultados: ${totalPassed} Pasadas, ${totalFailed} Fallidas, ${totalTests} Totales.`);
+console.log(`Cuerpo del correo generado en: ${outputPath}`);
+console.log(`Resultados finales: ${totalPassed} Pasadas, ${totalFailed} Fallidas, ${totalTests} Totales.`);
