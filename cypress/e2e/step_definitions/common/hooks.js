@@ -3,8 +3,8 @@ import { Before, After } from "@badeball/cypress-cucumber-preprocessor";
 // Define base URL
 
 // Import page objects with ES module syntax
-import LoginPageActions from '../../../../support/PageObjects/PageActions/LoginPageActions.js';
-import NavBarActions from "../../../../support/PageObjects/PageActions/NavBarActions";
+import LoginPageActions from '../../../support/PageObjects/PageActions/LoginPageActions.js';
+import NavBarActions from "../../../support/PageObjects/PageActions/NavBarActions";
 
 // Initialize page objects for this context
 Before(function() {

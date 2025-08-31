@@ -1,5 +1,5 @@
 const { When, Then } = require("@badeball/cypress-cucumber-preprocessor");
-const { getPageObject } = require("../Login/common/hooks");
+const { getPageObject } = require("../common/hooks");
 
 
 When('I click on the login button', function() {
