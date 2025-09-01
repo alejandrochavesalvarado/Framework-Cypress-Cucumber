@@ -1,0 +1,59 @@
+
+version: 0.2
+
+env:
+  variables:
+    REPORT_BUCKET: cypress-reports-mi-proyecto
+    DASHBOARD_DIR: cypress/reports/dashboard
+    RESULTS_JSON: cypress/reports/results.json
+    INDEX_FILE: index.html
+  secrets-manager:
+    BASE_URL: "BASE_URL"
+    DEFAULT_USER_EMAIL: "DEFAULT_USER_EMAIL"
+    DEFAULT_USER_PASSWORD: "DEFAULT_USER_PASSWORD"
+    CYPRESS_RECORD_KEY: "CYPRESS_RECORD_KEY"
+    SMTP_USER: "SMTP_USER"
+    SMTP_PASS: "SMTP_PASS"
+    SMTP_HOST: "SMTP_HOST"
+    SMTP_PORT: "SMTP_PORT"
+    REPORT_RECIPIENTS: "REPORT_RECIPIENTS"
+    CLOUD_URL: "CLOUD_URL"
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 20
+    commands:
+      - npm ci
+  build:
+    commands:
+      - set +e
+      - npm run cy:record; CODE=$?; echo $CODE > cy_exit_code
+      - set -e
+      - npm run report:gen
+      - aws s3 sync "$DASHBOARD_DIR" "s3://$REPORT_BUCKET/" --delete
+      - |
+        if [ -f cy_exit_code ] && [ "$(cat cy_exit_code)" = "0" ]; then
+          export STATUS=success
+        else
+          export STATUS=failure
+        fi
+        export PAGES_URL="https://$REPORT_BUCKET.s3.amazonaws.com/$INDEX_FILE"
+        node cypress/email/scripts/generate-email-body.js
+      - |
+        npm init -y >/dev/null 2>&1
+        npm install aws-sdk >/dev/null 2>&1
+        node - <<'EOF'
+        const fs=require('fs')
+        const AWS=require('aws-sdk')
+        const html=fs.readFileSync('email-body.html','utf8')
+        const ses=new AWS.SES({apiVersion:'2010-12-01',region:process.env.AWS_REGION})
+        const status=process.env.STATUS||'failure'
+        ses.sendEmail({
+          Destination:{ToAddresses:process.env.REPORT_RECIPIENTS.split(',').map(s=>s.trim())},
+          Message:{Subject:{Data:`Reporte de Pruebas Cypress - ${status==='success'?'Éxito':'Fallo'}`},
+                   Body:{Html:{Data:html}}},
+          Source: process.env.SMTP_USER
+        }).promise().then(r=>console.log(r.MessageId))
+          .catch(e=>{console.error(e);process.exit(1)})
+        EOF
