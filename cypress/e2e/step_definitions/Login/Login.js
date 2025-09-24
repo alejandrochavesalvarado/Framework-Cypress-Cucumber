@@ -8,7 +8,7 @@ When('I click on the login button', function() {
 });
 
 When('I enter {string} in the email field', function(email) {
-  cy.log(`Entering email: ${email || '[empty]'}`);
+  cy.log(`Entering email test: ${email || '[empty]'}`);
   getPageObject('loginPageActions').formLoaded();
   getPageObject('loginPageActions').enterEmail(email);
 });

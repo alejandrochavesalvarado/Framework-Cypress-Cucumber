@@ -40,7 +40,7 @@
     "@badeball/cypress-cucumber-preprocessor": "^23.0.0",
     "@faker-js/faker": "^10.0.0",
     "cross-env": "^10.0.0",
-    "cypress": "^15.0.0",
+    "cypress": "^15.1.0",
     "cypress-downloadfile": "^1.2.4",
     "cypress-esbuild-preprocessor": "^1.0.2",
     "cypress-file-upload": "^5.0.8",

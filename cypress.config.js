@@ -4,8 +4,6 @@ const { createEsbuildPlugin } = require("@badeball/cypress-cucumber-preprocessor
 const createBundler = require("@bahmutov/cypress-esbuild-preprocessor");
 const fs = require('fs');
 const path = require('path');
-const userData = require('./cypress/fixtures/users.json');
-const productData = require('./cypress/fixtures/products.json');
 require('dotenv').config();
 
 
@@ -99,20 +97,20 @@ module.exports = defineConfig({
     "download": {
       "directory": "./cypress/downloads"
     },
-    "video": false,
-    "screenshotOnRunFailure": true,
-    "trashAssetsBeforeRuns": true,
-    "pageLoadTimeout": 30000,
-    "env": {
-        "BASE_URL": process.env.BASE_URL,
-        "DEFAULT_USER_EMAIL": process.env.DEFAULT_USER_EMAIL,
-        "DEFAULT_USER_PASSWORD": process.env.DEFAULT_USER_PASSWORD,
-        "SMTP_USER":process.env.SMTP_USER,
-        "SMTP_PASS": process.env.SMTP_PASS,
-        "SMTP_PORT": process.env.SMTP_PORT,
-        "SMTP_HOST": process.env.SMTP_HOST,
-        "REPORT_RECIPIENTS": process.env.REPORT_RECIPIENTS,
-        "CLOUD_URL": process.env.CLOUD_URL,
+    video: false,
+    screenshotOnRunFailure: true,
+    trashAssetsBeforeRuns: true,
+    pageLoadTimeout: 30000,
+    env: {
+        BASE_URL: process.env.BASE_URL,
+        DEFAULT_USER_EMAIL: process.env.DEFAULT_USER_EMAIL,
+        DEFAULT_USER_PASSWORD: process.env.DEFAULT_USER_PASSWORD,
+        SMTP_USER:process.env.SMTP_USER,
+        SMTP_PASS: process.env.SMTP_PASS,
+        SMTP_PORT: process.env.SMTP_PORT,
+        SMTP_HOST: process.env.SMTP_HOST,
+        REPORT_RECIPIENTS: process.env.REPORT_RECIPIENTS,
+        CLOUD_URL: process.env.CLOUD_URL,
     },
   },
 });
